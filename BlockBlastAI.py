@@ -221,6 +221,7 @@ def update_lines(board: list) -> int:
     return score
 
 
+
 def progress_bar(prog: Progress) -> None:
     
     os.system('cls')

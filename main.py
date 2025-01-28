@@ -15,17 +15,20 @@ def main():
         piece2 = get_piece(2)
         piece3 = get_piece(3)
         pieces, coords = solve(board, [piece1, piece2, piece3])
-        print_steps(board, pieces, coords)
+        if coords == -1:
+            print("Couldn't Find a solution")
+        else:
+            print_steps(board, pieces, coords)
         
         while not valid_input:
-                user_input = input('Would you like to continue? (y/n):')
+                user_input = input('Would you like to go to the next (n)\nOr exit? (e):')
                 
                 try:
-                    if user_input.lower() == 'n':
+                    if user_input.lower() == 'e':
                         valid_input = True
                         end = True
                         
-                    elif user_input.lower() == 'y':
+                    elif user_input.lower() == 'n':
                         valid_input = True
                     else:
                         print('Invalid input please try again')
@@ -53,11 +56,44 @@ def get_cur_board_state() -> list:
             
             try:
                 if user_input.lower() == 'n':
-                    valid_input = True
+                        valid_input = True
                     
                 elif 0 <= int(user_input[1]) <= 7 and 97 <= ord(user_input[0].lower()) <= 105:
-                    valid_input = True
-                    board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 1
+                    
+                    if len(user_input) == 2:
+                        valid_input = True
+                        
+                        if board[int(user_input[1])][ord(user_input[0].lower()) - 97] == 0:
+                            board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 1
+                                
+                        else:
+                            board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 0
+                            
+
+                    elif len(user_input) == 4: 
+                        valid_input = True
+                        
+                        min_num = int(user_input[1])
+                        max_num = int(user_input[3])
+                        min_let = ord(user_input[0].lower()) - 97
+                        max_let = ord(user_input[2].lower()) - 97
+                        
+                        if min_num > max_num:
+                            temp = min_num
+                            min_num = max_num
+                            max_num = temp
+                        if min_let > max_let:
+                            temp = min_let
+                            min_let = max_let
+                            max_let = temp
+                        
+                        for y in range(min_num, max_num+1):
+                            for x in range(min_let,max_let+1):
+                                if board[y][x] == 0:
+                                    board[y][x] = 1                                       
+                                else:
+                                    board[y][x] = 0
+                                                                 
                 else:
                     print('Invalid input please try again')
             
@@ -108,23 +144,95 @@ def get_piece(num: int) -> list:
             
             try:
                 if user_input.lower() == 'n':
-                    valid_input = True
+                    if min_x < 8 and max_x > -1 and min_y < 8 and max_y > -1:
+                        valid_input = True
+                    else:
+                        print("Please set bounds by placing blocks on the edges")
                     
                 elif 0 <= int(user_input[1]) <= 7 and 97 <= ord(user_input[0].lower()) <= 105:
-                    valid_input = True
-                    board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 1
-                    parts.append(user_input)
                     
-                    
-                    if ord(user_input[0].lower()) - 97 < min_x:
-                        min_x = ord(user_input[0].lower()) - 97
-                    if ord(user_input[0].lower()) - 97 > max_x:
-                        max_x = ord(user_input[0].lower()) - 97
-                    if int(user_input[1]) < min_y:
-                        min_y = int(user_input[1])
-                    if int(user_input[1]) > max_y:
-                        max_y = int(user_input[1])
+                    if len(user_input) == 2:
+                        valid_input = True
                         
+                        if board[int(user_input[1])][ord(user_input[0].lower()) - 97] == 0:
+                            board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 1
+                            parts.append(user_input)
+                            
+                            if ord(user_input[0].lower()) - 97 < min_x:
+                                min_x = ord(user_input[0].lower()) - 97
+                            if ord(user_input[0].lower()) - 97 > max_x:
+                                max_x = ord(user_input[0].lower()) - 97
+                            if int(user_input[1]) < min_y:
+                                min_y = int(user_input[1])
+                            if int(user_input[1]) > max_y:
+                                max_y = int(user_input[1])
+                                
+                        else:
+                            board[int(user_input[1])][ord(user_input[0].lower()) - 97] = 0
+                            try:
+                                parts.remove(user_input)
+                            except:
+                                print('Error: Failed to remove\nProceed with caution')
+                        
+                            if ord(user_input[0].lower()) - 97 == min_x:
+                                min_x = 8
+                            if ord(user_input[0].lower()) - 97 == max_x:
+                                max_x = -1
+                            if int(user_input[1]) == min_y:
+                                min_y = 8
+                            if int(user_input[1]) == max_y:
+                                max_y = -1
+                            
+
+                    elif len(user_input) == 4: 
+                        valid_input = True
+                        
+                        min_num = int(user_input[1])
+                        max_num = int(user_input[3])
+                        min_let = ord(user_input[0].lower()) - 97
+                        max_let = ord(user_input[2].lower()) - 97
+                        
+                        if min_num > max_num:
+                            temp = min_num
+                            min_num = max_num
+                            max_num = temp
+                        if min_let > max_let:
+                            temp = min_let
+                            min_let = max_let
+                            max_let = temp
+                        
+                        for y in range(min_num, max_num+1):
+                            for x in range(min_let,max_let+1):
+                                if board[y][x] == 0:
+                                    board[y][x] = 1
+                                    insert = chr(x+97) + str(y)
+                                    parts.append(insert)
+                                    
+                                    if y < min_y:
+                                        min_y = y
+                                    if y > max_y:
+                                        max_y = y
+                                    if x < min_x:
+                                        min_x = x
+                                    if x > max_x:
+                                        max_x = x
+                                        
+                                else:
+                                    board[y][x] = 0
+                                    insert = chr(x+97) + str(y)
+                                    try:
+                                        parts.remove(insert)
+                                    except:
+                                        print('Error: Failed to remove\nProceed with caution')
+                                    
+                                    if y == min_y:
+                                        min_y = 8
+                                    if y == max_y:
+                                        max_y = -1
+                                    if x == min_x:
+                                        min_x = 8
+                                    if x == max_x:
+                                        max_x = -1
                         
                 else:
                     print('Invalid input please try again')

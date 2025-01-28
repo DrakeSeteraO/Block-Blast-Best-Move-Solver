@@ -25,29 +25,33 @@ def solve(board: list, pieces: list) -> list:
     
     highest_score = -1
     best_coords = -1
+    best_sides = -1
     best_pieces = list()
     
-    Bpieces, Bcoords, Bscore = piece1(board, pieces[0],pieces[1:], prog)
-    if Bcoords != -1 and Bscore > highest_score:
+    Bpieces, Bcoords, Bscore, Bsides = piece1(board, pieces[0],pieces[1:], prog)
+    if (Bcoords != -1 and Bscore > highest_score) or (Bcoords != -1 and Bscore == highest_score and Bsides > best_sides):
             highest_score = Bscore
+            best_sides = Bsides
             best_coords = Bcoords
             best_pieces = Bpieces
             
     prog.set(127)
     progress_bar(prog)
     
-    Bpieces, Bcoords, Bscore = piece1(board, pieces[1],[pieces[0],pieces[2]], prog)
-    if Bcoords != -1 and Bscore > highest_score:
+    Bpieces, Bcoords, Bscore, Bsides = piece1(board, pieces[1],[pieces[0],pieces[2]], prog)
+    if(Bcoords != -1 and Bscore > highest_score) or (Bcoords != -1 and Bscore == highest_score and Bsides > best_sides):
             highest_score = Bscore
+            best_coords = Bcoords
             best_coords = Bcoords
             best_pieces = Bpieces
             
     prog.set(259)
     progress_bar(prog)
     
-    Bpieces, Bcoords, Bscore = piece1(board, pieces[2],pieces[:2], prog)
-    if Bcoords != -1 and Bscore > highest_score:
+    Bpieces, Bcoords, Bscore, Bsides = piece1(board, pieces[2],pieces[:2], prog)
+    if (Bcoords != -1 and Bscore > highest_score) or (Bcoords != -1 and Bscore == highest_score and Bsides > best_sides):
             highest_score = Bscore
+            best_coords = Bcoords
             best_coords = Bcoords
             best_pieces = Bpieces
             
@@ -64,29 +68,33 @@ def piece1(board: list, placing_piece: list, other_pieces: list, prog: Progress)
     
     highest_score = -1
     best_coords = -1
+    best_sides = -1
     pieces = list()
     
     for l in locations:
         new_board = dc(board)
         new_board = insert_piece(new_board, placing_piece, l)
         score = update_lines(new_board)
+        sides = calculate_sides(new_board, placing_piece, l)
         
-        Bpieces, Bcoords, Bscore = piece2(new_board, other_pieces[0], other_pieces[1], prog)
-        if Bcoords != -1 and score + Bscore > highest_score:
+        Bpieces, Bcoords, Bscore, Bsides = piece2(new_board, other_pieces[0], other_pieces[1], prog)
+        if (Bcoords != -1 and score + Bscore > highest_score) or (Bcoords != -1 and score + Bscore == highest_score and sides + Bsides > best_sides ):
             highest_score = score + Bscore
+            best_sides = sides + Bsides
             best_coords = [l, Bcoords[0], Bcoords[1]]
             pieces = [placing_piece, Bpieces[0], Bpieces[1]]
         
         
-        Bpieces, Bcoords, Bscore = piece2(new_board, other_pieces[1], other_pieces[0], prog)
-        if Bcoords != -1 and score + Bscore > highest_score:
+        Bpieces, Bcoords, Bscore, Bsides = piece2(new_board, other_pieces[1], other_pieces[0], prog)
+        if (Bcoords != -1 and score + Bscore > highest_score) or (Bcoords != -1 and score + Bscore == highest_score and sides + Bsides > best_sides ):
             highest_score = score + Bscore
+            best_sides = sides + Bsides
             best_coords = [l, Bcoords[0], Bcoords[1]]
             pieces = [placing_piece, Bpieces[0], Bpieces[1]]
     
     progress_bar(prog)
-    #pieces, coord, score
-    return pieces, best_coords, highest_score
+    #pieces, coord, score, sides
+    return pieces, best_coords, highest_score, best_sides
 
 
 
@@ -95,6 +103,7 @@ def piece2(board: list, placing_piece: list, other_piece: list, prog: Progress) 
     
     highest_score = -1
     best_coords = -1
+    best_sides = -1
     pieces = [placing_piece, other_piece]
     
     for l in locations:
@@ -102,17 +111,19 @@ def piece2(board: list, placing_piece: list, other_piece: list, prog: Progress) 
         new_board = dc(board)
         new_board = insert_piece(new_board, placing_piece, l)
         score = update_lines(new_board)
+        sides = calculate_sides(new_board, placing_piece, l)
         
-        Bcoord, Bscore = piece3(new_board, other_piece)
+        Bcoord, Bscore, Bsides = piece3(new_board, other_piece)
         
         
-        if Bcoord != -1 and score + Bscore > highest_score:
+        if (Bcoord != -1 and score + Bscore > highest_score) or (Bcoord != -1 and score + Bscore == highest_score and sides + Bsides > best_sides):
             highest_score = score + Bscore
+            best_sides = sides + Bsides
             best_coords = [l, Bcoord]
     
     progress_bar(prog)
-    #pieces, coord, score
-    return pieces, best_coords, highest_score
+    #pieces, coord, score, sides
+    return pieces, best_coords, highest_score, best_sides
         
 
 
@@ -122,18 +133,21 @@ def piece3(board: list, placing_piece: list) -> list:
     
     highest_score = -1
     best_coord = -1
+    best_sides = -1
     
     for l in locations:
         new_board = dc(board)
         new_board = insert_piece(new_board, placing_piece, l)
         score = update_lines(new_board)
+        sides = calculate_sides(new_board, placing_piece, l)
         
-        if score > highest_score:
+        if score > highest_score or (score == highest_score and sides > best_sides):
             highest_score = score
+            best_sides = sides
             best_coord = l
     
-    #coord, score
-    return best_coord, highest_score
+    #coord, score, sides
+    return best_coord, highest_score, best_sides
         
 
 def place_locations(board: list, piece: list) -> list:
@@ -217,9 +231,54 @@ def update_lines(board: list) -> int:
         for y in range(len(board)):
             board[y][c] = 0
     
-    score = len(rows_scored) + len(cols_scored)
+    score = len(rows_scored) + len(cols_scored) + test_clear(board)
     return score
 
+
+
+def test_clear(board: list) -> int:
+    for y in range(len(board)):
+        for x in range(len(board[y])):
+            if board[y][x] == 1:
+                return 0
+    return 5
+
+
+
+def calculate_sides(board: list, piece: list, coord: list) -> int:
+    sides = 0
+    
+    for y in range(len(piece)):
+        for x in range(len(piece[y])):
+            if piece[y][x] == 1 and board[y+coord[1]][x+coord[0]] == 1:
+                
+                if (y+coord[1]) - 1 < 0:
+                    sides += 1
+                else:
+                    if board[y+coord[1]-1][x+coord[0]] == 1:
+                        sides += 1
+                
+                if (y+coord[1]) + 1 > len(board) - 1:
+                    sides += 1
+                else:
+                    if board[y+coord[1]+1][x+coord[0]] == 1:
+                        sides += 1
+                
+                if (x+coord[0]) - 1 < 0:
+                    sides += 1
+                else:
+                    if board[y+coord[1]][x+coord[0]-1] == 1:
+                        sides += 1
+                
+                if (x+coord[0]) + 1 > len(board[y]) - 1:
+                    sides += 1
+                else:
+                    if board[y+coord[1]][x+coord[0]+1] == 1:
+                        sides += 1
+    return sides
+                
+                    
+            
 
 
 def progress_bar(prog: Progress) -> None:
